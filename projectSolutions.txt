@@ -1,0 +1,88 @@
+Pig Projects:
+PROJECT 1:
+Crime analysis:
+
+a = load '/home/cloudera/largedatasets/crimes' using PigStorage(',') as (id:int,casenum:chararray,date:chararray,block:chararray,iucr:int,primarytype:chararray,description:chararray,location:chararray,arrest:chararray,domestic:chararray,beat:chararray,district:chararray,ward:chararray,CommunityArea:chararray,FBICode:chararray,XCoordinate:int, YCoordinate:int,year:int,updatedOn:datetime,latitude:chararray,longitude:double,XY:chararray);
+
+1.Write a mapreduce/pig program to calculate the number of cases  investigated under each FBI code 
+
+g = group a by FBICode;
+c = foreach g generate group, COUNT(a.casenum);
+
+
+ 2.Write a mapreduce/pig program to calculate the number of cases  investigated under FBI code 32. 
+
+f = filter c by group matches '32';
+
+ 3.Write a mapreduce/pig program to calculate the number of arrests in  theft district wise. 
+
+f = filter a by arrest matches 'true' and a.primarytype matches 'THEFT';
+g= group f by district;
+c= foreach g generate group,COUNT(f.arrest);
+
+ 
+ 4.Write a mapreduce/pig program to calculate the number of arrests  done  between october 2014 and october 2015. 
+
+g = group a by arrest;
+r = foreach g generate group,COUNT(a.arrest);
+
+
+--------------------------------------------------------------------------------------------------------------------
+PROJECT2:
+
+The data set contains information about passengers who boarded Titanic ship. It contains data points like: 
+Column 1 : PassengerId 
+Column 2 : Survived  (survived=0 & died=1) 
+Column 3 : Pclass 
+Column 4 : Name 
+Column 5 : Sex 
+Column 6 : Age 
+Column 7 : SibSp 
+Column 8 : Parch 
+Column 9 : Ticket 
+Column 10 : Fare 
+Column 11 : Cabin 
+Column 12 : Embarked 
+eg: 2,1,1,Cumings Mrs. John Bradley (Florence Briggs Thayer),female,38,1,0,PC 17599,71.2833,C85,C,
+ 
+ Note:You need to copy the data set into HDFS using flume and send the screen shot of that with the project solution 
+ flume-ng agent --conf conf --conf-file /home/cloudera/flumefiles/titanic.conf --name a1 -Dflume.root.logger=INFO,console
+ 
+ hadoop fs -getmerge /user/flume/titanic2/ /home/cloudera/largedatasets/titanic2
+ 
+ 1.In this problem statement we will find the average fare of each class. 
+	a = load '/home/cloudera/largedatasets/titanic2' using PigStorage(',') as (pid:int,survived:int,pclass:int,name:chararray,sex:chararray,age:int,sinsp:int,parch:int,ticket:chararray,fare:double,cabin:chararray,embarked:chararray);
+	g = group a by pclass;
+	r = foreach g generate group,AVG(a.fare);
+	
+	(1,84.1546874999999)
+(2,20.662183152173906)
+(3,13.67555010183301)
+
+	
+  2.In this problem statement we will find the number of people alive in  each class and are embarked in Southampton. 
+  
+  f = filter a by survived == 0 and embarked matches 'S';
+  g = group f by pclass;
+  r = foreach g generate group, COUNT(f.survived);
+  (1,53)
+  (2,88)
+  (3,286)
+ 
+ 
+ 3.In this problem statement we will find out number of male and  female people died in each class. 
+ 
+ f = filter a by survived == 1;
+ g = group f by (pclass,sex);
+ c = foreach g generate group,COUNT(f.sex);
+ ((1,male),45)
+((1,female),91)
+((2,male),17)
+((2,female),70)
+((3,male),47)
+((3,female),72) 
+----------------------------------------------------------------------------------------------------------
+
+PROJECT3:
+
+flume-ng agent --conf conf --conf-file /home/cloudera/flumefiles/twitter.conf --name TwitterAgent -Dflume.root.logger=INFO,console
